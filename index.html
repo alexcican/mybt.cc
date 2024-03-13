@@ -171,7 +171,7 @@
     <div id="price">&nbsp;</div>
 
     <div>
-      <span id="todayChange">… Today</span> &middot; <a href="https://x.com/intent/post?text=nobody:%0A%0Ame:%20Lisan%20al%20Gaib!!%20I’ve%20witnessed%20BTC%20at%20this%20crazy%20price.%20Check%20it%20yourself%3A&url=https%3A%2F%2Fmybt.cc" id="twitter">Share</a>
+      <span id="todayChange">… Today</span> &middot; <a href="https://x.com/intent/post?text=-%20nobody:%0A%0A-%20me:%20Lisan%20al%20Gaib!!%20I’ve%20witnessed%20BTC%20at%20this%20crazy%20price.%20Don’t%20believe%20me?%20See%3A&url=https%3A%2F%2Fmybt.cc" id="twitter">Share</a>
     </div>
 
     <footer>
@@ -246,7 +246,7 @@
                       const priceFormatted = formatNumber(price);
                       priceElement.innerHTML = `${priceFormatted}`;
                       document.title = `${priceFormatted}`;
-                      twitterLink.href = `https://x.com/intent/tweet?text=nobody:%0A%0Ame:%20Lisan%20al%20Gaib!!%20I’ve%20witnessed%20BTC%20at%20${priceFormatted}%20${selectedCurrency}.%20Check%20it%20yourself:%20https%3A%2F%2Fmybt.cc`;
+                      twitterLink.href = `https://x.com/intent/post?text=-%20nobody:%0A%0A-%20me:%20Lisan%20al%20Gaib!!%20I’ve%20witnessed%20BTC%20at%20${priceFormatted}%20${selectedCurrency}.%20Don’t%20believe%20me?%20See%3A&url=https%3A%2F%2Fmybt.cc`;
 
                       // Get last update time
                       const now = new Date();
