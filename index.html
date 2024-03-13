@@ -171,7 +171,7 @@
     <div id="price">&nbsp;</div>
 
     <div>
-      <span id="todayChange">… Today</span> &middot; <a href="https://x.com/intent/post?text=-%20nobody:%0A%0A-%20me:%20Lisan%20al%20Gaib!!%20I’ve%20witnessed%20BTC%20at%20this%20crazy%20price.%20Don’t%20believe%20me?%20See%3A&url=mybt.cc" id="twitter">Share</a>
+      <span id="todayChange" title="Compared to yesterday’s BTC price">… Today</span> &middot; <a href="https://x.com/intent/post?text=-%20nobody:%0A%0A-%20me:%20Lisan%20al%20Gaib!!%20I’ve%20witnessed%20BTC%20at%20this%20crazy%20price.%20Don’t%20believe%20me?%20See%3A&url=mybt.cc" id="twitter" title="Sharing is caring!">Share</a>
     </div>
 
     <footer>
@@ -246,7 +246,7 @@
                       const priceFormatted = formatNumber(price);
                       priceElement.innerHTML = `${priceFormatted}`;
                       document.title = `${priceFormatted}`;
-                      twitterLink.href = `https://x.com/intent/post?text=-%20nobody:%0A%0A-%20me:%20Lisan%20al%20Gaib!!%20I’ve%20witnessed%20BTC%20at%20${priceFormatted}%20${selectedCurrency}.%20Don’t%20believe%20me?%20See%3A&url=mybt.cc`;
+                      twitterLink.href = `https://x.com/intent/post?text=-%20nobody:%0A%0A-%20me:%20Lisan%20al%20Gaib!!%20I’ve%20witnessed%20the%20BTC%20price%20at%20${priceFormatted}%20${selectedCurrency}.%20Don’t%20believe%20me?%20See%3A&url=mybt.cc`;
 
                       // Get last update time
                       const now = new Date();
@@ -286,13 +286,13 @@
               <ol>
                 <li>Live BTC price <em>(updates every 10 seconds.)</em></li>
                 <li>Price change % today <em>(VS yesterday.)</em></li>
-                <li>Select currency <em>(+ remember preference if you revisit.)</em></li>
-                <li>Price update in page title. Browse other sites & still see the BTC price in your tab.</li>
+                <li>Change currency <em>(+ remember preference if you revisit.)</em></li>
+                <li>Price updates in page title. Browse other sites & still see the BTC price in your tab.</li>
               </ol>
               <h3>WHO?</h3>
               <p>Concept, design, and code by <a href="https://x.com/alexcican" rel="nofollow">Alex Cican</a>.</p>
               <p>Report issues or fork it on <a href="https://github.com/alexcican/mybt.cc" rel="nofollow">GitHub</a>. Live data <a href="https://cryptocompare.com" rel="nofollow">from here</a>.</p>
-              <h3>If you like this site, <a href="https://donate.stripe.com/28oaEU3ccgUG9MccMN" rel="nofollow">consider donating</a>. Thank you!</h3>
+              <h3>If you like this site, <a href="https://donate.stripe.com/28oaEU3ccgUG9MccMN">consider donating</a>. Thank you!</h3>
           `;
 
           whyLink.addEventListener("click", function (event) {
