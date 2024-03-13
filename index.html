@@ -269,7 +269,7 @@
           const initialize = () => {
               loadSelectedCurrency();
               fetchBTCPrice();
-              setInterval(fetchBTCPrice, 15000);
+              setInterval(fetchBTCPrice, 10000);
           };
 
           initialize();
@@ -284,7 +284,7 @@
               <p>So, I created this simple site.</p>
               <h3>FEATURES:</h3>
               <ol>
-                <li>Live BTC price <em>(updates every 15 seconds.)</em></li>
+                <li>Live BTC price <em>(updates every 10 seconds.)</em></li>
                 <li>Price change % today <em>(VS yesterday.)</em></li>
                 <li>Select currency <em>(+ remember preference if you revisit.)</em></li>
                 <li>Price update in page title. Browse other sites & still see the BTC price in your tab.</li>
