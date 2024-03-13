@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Check BTC Price - Bitcoin real-time price update</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="https://mybt.cc/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://mybt.cc/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://mybt.cc/favicon-16x16.png">
+    <link rel="shortcut icon" type="image/x-icon" href="https://mybt.cc/favicon.ico">
+    <link rel="manifest" href="https://mybt.cc/site.webmanifest">
+
+    <meta itemprop="name" content="Check BTC Price - Bitcoin real-time price update">
+    <meta itemprop="description" content="Simple Bitcoin price checker updates real time.">
+    <meta itemprop="image" content="https://mybt.cc/cover.jpg">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Check BTC Price - Bitcoin real-time price update">
+    <meta name="twitter:description" content="Simple Bitcoin price checker updates real time.">
+    <meta name="twitter:image" content="https://mybt.cc/cover.jpg">
+
+    <meta property="og:title" content="Check BTC Price - Bitcoin real-time price update">
+    <meta property="og:description" content="Simple Bitcoin price checker updates real time.">
+    <meta property="og:image" content="https://mybt.cc/cover.jpg">
+    <meta property="og:url" content="https://mybt.cc">
+    <meta property="og:type" content="blog">
+
+    <script defer src="https://eu.umami.is/script.js" data-website-id="35b08d46-96db-4538-95f2-31cc90a62917"></script>
+
+    <style type="text/css">
+      html, body {
+        font-family: monospace;
+        font-size: 1.5vw;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      a {
+        color: inherit;
+        text-underline-offset: 4px;
+        padding: 20px 0;
+      }
+      #price {
+        width: 100%;
+        text-align: center;
+        font-size: 15vw;
+      }
+      #currencySelect {
+        display: block-inline;
+        align-items: center;
+        margin-top: -1vw;
+        position: relative;
+      }
+      #currencySelect:after {
+        content: '▾';
+        display: inline-block;
+        position: absolute;
+        right: 5%;
+        top: -5%;
+        z-index: -1;
+      }
+      #currency {
+        color: inherit;
+        font-family: monospace;
+        font-size: 3vw;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        padding: 1vw;
+        background-color: transparent;
+        cursor: pointer;
+        outline: none;
+        border: solid 1px #00000020;
+      }
+      footer {
+        font-size: 1vw;
+        margin-top: 10vh;
+        opacity: .4;
+        position: fixed;
+        bottom: 5vh;
+        left: 0;
+        width: 100%;
+        text-align: center;
+      }
+      body.popup-open::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9998;
+        -webkit-backdrop-filter: blur(10px);
+      }
+      #popup {
+        width: 80vw;
+        max-width: 850px;
+        font-size: .5em;
+        line-height: 150%;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 2vw 5vw;
+        background-color: #fff;
+        border: solid 1px #00000020;
+        box-shadow: 0 100px 100px rgba(0,0,0,.2);
+        z-index: 9999;
+        backdrop-filter: none;
+        border-radius: 20px;
+        overflow-y: scroll;
+      }
+      #closePopup {
+        cursor: pointer;
+        float: right;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #111;
+          color: #fff;
+        }
+        #currency,#popup {
+          border: solid 1px #ffffff20;
+        }
+        #popup {
+          background-color: #111;
+        }
+      }
+      @media screen and (max-width:650px) {
+        body {
+          font-size: 2em;
+        }
+        #currency {
+          font-size: 6vw;
+        }
+        footer {
+          font-size: 3vw;
+        }
+        #popup {
+          font-size: 1em;
+          max-height: 90svh;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+      }
+    </style>
+</head>
+<body>
+    <h1>
+      BTC Price
+      <span id="currencySelect">
+        <select id="currency" title="Change currency" ame="currency">
+          <option value="USD" selected>USD&nbsp;</option>
+          <option value="EUR">EUR</option>
+          <option value="GBP">GBP</option>
+          <option value="JPY">JPY</option>
+          <option value="AUD">AUD</option>
+          <option value="CAD">CAD</option>
+          <option value="CHF">CHF</option>
+          <option value="RON">RON</option>
+        </select>
+      </span>
+    </h1>
+
+    <div id="price">&nbsp;</div>
+
+    <div>
+      <span id="todayChange">… Today</span> &middot; <a href="https://x.com/intent/post?text=nobody:%0A%0Ame:%20Lisan%20al%20Gaib!!%20I’ve%20witnessed%20BTC%20at%20this%20crazy%20price.%20Check%20it%20yourself%3A&url=https%3A%2F%2Fmybt.cc" id="twitter">Share</a>
+    </div>
+
+    <footer>
+      <span id="lastUpdated"></span> &middot; <a id="whyLink" href="#">Why?</a>
+    </footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+          const priceElement = document.getElementById("price");
+          const lastUpdatedElement = document.getElementById("lastUpdated");
+          const currencySelect = document.getElementById("currency");
+          const twitterLink = document.getElementById("twitter");
+          let selectedCurrency;
+          let price;
+
+          // Save & Load selected currency from localStorage
+          const saveSelectedCurrency = () => {
+              localStorage.setItem("selectedCurrency", selectedCurrency);
+          };
+          const loadSelectedCurrency = () => {
+              const savedCurrency = localStorage.getItem("selectedCurrency");
+              if (savedCurrency) {
+                  selectedCurrency = savedCurrency;
+                  currencySelect.value = selectedCurrency;
+              }
+          };
+
+          // Fetch close price yesterday
+          const fetchClosePriceYesterday = () => {
+              const todayChange = document.getElementById("todayChange");
+              const closePriceApiUrl = `https://min-api.cryptocompare.com/data/v2/histoday?fsym=BTC&tsym=${selectedCurrency}&limit=1`;
+
+              fetch(closePriceApiUrl)
+                  .then(response => response.json())
+                  .then(data => {
+                      const closePriceYesterday = data.Data.Data[0].close;
+                      const formatNumber = (number) => {
+                          return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(number);
+                      };
+                      // Calculate percentage change
+                      const percentageChange = ((price - closePriceYesterday) / closePriceYesterday) * 100;
+                      const percentageChangeFormatted = formatNumber(Math.abs(percentageChange), 4);
+
+                      // Check if % > 0 or % < 0
+                      const comparisonText = `${percentageChange >= 0 ? '+' : '-'}${isNaN(percentageChange) ? '0.00' : percentageChangeFormatted}%`;
+
+                      // Write change in dom + title
+                      todayChange.innerHTML = comparisonText + ' Today';
+                      document.title = `${document.title} (${comparisonText})`;
+
+                      // Set color based on percentage change
+                      todayChange.style.color = percentageChange >= 0 ? 'lime' : 'red';
+                  })
+                  .catch(error => console.error("Error fetching BTC yesterday's close price:", error));
+          };
+
+          // Fetch BTC Price now
+          const fetchBTCPrice = () => {
+              selectedCurrency = currencySelect.value;
+              const apiUrl = `https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=${selectedCurrency}`;
+
+              fetch(apiUrl)
+                  .then(response => response.json())
+                  .then(data => {
+                      price = data[selectedCurrency];
+
+                      const formatNumber = (number) => {
+                          return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(number);
+                      };
+
+                      // Format price and write it in dom + title
+                      const priceFormatted = formatNumber(price);
+                      priceElement.innerHTML = `${priceFormatted}`;
+                      document.title = `${priceFormatted}`;
+                      twitterLink.href = `https://x.com/intent/tweet?text=nobody:%0A%0Ame:%20Lisan%20al%20Gaib!!%20I’ve%20witnessed%20BTC%20at%20${priceFormatted}%20${selectedCurrency}.%20Check%20it%20yourself:%20https%3A%2F%2Fmybt.cc`;
+
+                      // Get last update time
+                      const now = new Date();
+                      const lastUpdated = `Last Updated: ${now.toLocaleTimeString()}`;
+                      lastUpdatedElement.innerHTML = lastUpdated;
+                  })
+                  .catch(error => console.error("Error fetching BTC price:", error));
+
+                  setTimeout(fetchClosePriceYesterday, 999); // “lazypromise” to prevent +0.00 result when response is delayed
+          };
+
+          // Add event listener for currency selection change
+          currencySelect.addEventListener("change", () => {
+              selectedCurrency = currencySelect.value;
+              saveSelectedCurrency();
+              fetchBTCPrice();
+          });
+
+          // Load selected currency / initial BTC fetch / ping every 15s
+          const initialize = () => {
+              loadSelectedCurrency();
+              fetchBTCPrice();
+              setInterval(fetchBTCPrice, 15000);
+          };
+
+          initialize();
+
+          // Show popup when clicking “why?” link
+          const whyLink = document.querySelector('footer a[href="#"]');
+          const popupText = `
+              <h2>Why this site?</h2>
+              <p style="color:red">— “Bro, just check the BTC price in Coinbase…”</p>
+              <p>No.<br>
+              I don’t need apps to check the BTC price. I want a <em>simple way</em> of checking the BTC price at a glance. I also despise notification alerts.</p>
+              <p>So, I created this simple site.</p>
+              <h3>FEATURES:</h3>
+              <ol>
+                <li>Live BTC price <em>(updates every 15 seconds.)</em></li>
+                <li>Price change % today <em>(VS yesterday.)</em></li>
+                <li>Select currency <em>(+ remember preference if you revisit.)</em></li>
+                <li>Price update in page title. Browse other sites & still see the BTC price in your tab.</li>
+              </ol>
+              <h3>WHO?</h3>
+              <p>Concept, design, and code by <a href="https://x.com/alexcican" rel="nofollow">Alex Cican</a>.</p>
+              <p>Report issues or fork it on <a href="https://github.com/alexcican/mybt.cc" rel="nofollow">GitHub</a>. Live data <a href="cryptocompare.com" rel="nofollow">from here</a>.</p>
+              <h3>If you like this site, <a href="https://donate.stripe.com/28oaEU3ccgUG9MccMN">consider donating</a>. Thank you!</h3>
+          `;
+
+          whyLink.addEventListener("click", function (event) {
+              event.preventDefault();
+
+              // Create popup element
+              const popup = document.createElement("div");
+              popup.id = "popup";
+              popup.innerHTML = `<button id="closePopup">Close</button><p>${popupText}</p>`;
+
+              // Append the popup to the body
+              document.body.appendChild(popup);
+
+              // Add class to body to apply background filter
+              document.body.classList.add("popup-open");
+
+              // Close the popup when the close button is clicked
+              const closePopupButton = document.getElementById("closePopup");
+              closePopupButton.addEventListener("click", function () {
+                  document.body.removeChild(popup);
+                  // Remove class to revert background filter
+                  document.body.classList.remove("popup-open");
+              });
+
+              // Close popup when clicking outside
+              document.addEventListener("click", function (event) {
+                  const popup = document.getElementById("popup");
+                  if (popup && !popup.contains(event.target) && !event.target.matches("#whyLink")) {
+                      document.body.removeChild(popup);
+                      document.body.classList.remove("popup-open");
+                  }
+              });
+          });
+
+          // Event listener to open / close popup with ESC key
+          document.addEventListener("keydown", function (event) {
+              if (event.key === "Escape") {
+                  const popup = document.getElementById("popup");
+                  if (popup) {
+                      // Close the popup when the Escape key is pressed
+                      document.body.removeChild(popup);
+                      document.body.classList.remove("popup-open");
+                  } else {
+                      // Open the popup when the Escape key is pressed
+                      const whyLink = document.getElementById("whyLink");
+                      whyLink.click();
+                  }
+                  event.preventDefault(); // Prevents the default behavior of the Escape key
+              }
+          });
+      });
+    </script>
+</body>
+</html>
