@@ -274,6 +274,18 @@
 
           initialize();
 
+          // add share text to clipboard
+          twitterLink.addEventListener("click", function (event) {
+              const twitterHref = twitterLink.getAttribute("href");
+              const replacedHref = twitterHref.replace("&url=", " https://").replace("https://x.com/intent/post?text=", "");
+              const textToCopy = decodeURIComponent(replacedHref);
+
+              navigator.clipboard.writeText(textToCopy)
+                  .then(() => {
+                      alert('Text copied—share it anywhere. Now redirecting to 𝕏…');
+                  })
+          });
+
           // Show popup when clicking “why?” link
           const whyLink = document.querySelector('footer a[href="#"]');
           const popupText = `
