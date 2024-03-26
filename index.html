@@ -46,6 +46,9 @@
         text-underline-offset: 4px;
         padding: 20px 0;
       }
+      a:hover {
+        opacity: .5;
+      }
       #price {
         width: 100%;
         text-align: center;
@@ -77,6 +80,12 @@
         cursor: pointer;
         outline: none;
         border: solid 1px #00000020;
+      }
+      #closePriceGraph {
+        width: 100vw;
+        height: 100vh;
+        position: fixed;
+        z-index: -1;
       }
       footer {
         font-size: 1vw;
@@ -171,13 +180,16 @@
     <div id="price">&nbsp;</div>
 
     <div>
-      <span id="todayChange" title="Compared to yesterday’s BTC price">… Today</span> &middot; <a href="https://x.com/intent/post?text=-%20nobody:%0A%0A-%20me:%20Lisan%20al%20Gaib!!%20I’ve%20witnessed%20BTC%20at%20this%20crazy%20price.%20Don’t%20believe%20me?%20See%3A&url=mybt.cc" id="twitter" title="Sharing is caring!" data-umami-event="share-button">Share</a>
+      <span id="todayChange" title="Compared to yesterday’s BTC price">… Today</span> &middot; <a href="https://x.com/intent/post?text=-%20nobody:%0A%0A-%20me:%20Lisan%20al%20Gaib!!%20I’ve%20witnessed%20BTC%20at%20this%20crazy%20price.%20Don’t%20believe%20me?%20See%3A&url=mybt.cc" id="twitter" title="Sharing is caring!" data-umami-event="share-button">Share it</a>
     </div>
+
+    <div id="closePriceGraph"></div>
 
     <footer>
       <span id="lastUpdated"></span> &middot; <a id="whyLink" href="#" data-umami-event="why-button">Why?</a>
     </footer>
 
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
           const priceElement = document.getElementById("price");
@@ -197,65 +209,176 @@
                   selectedCurrency = savedCurrency;
                   currencySelect.value = selectedCurrency;
               }
+              // Fetch user location and set default currency if not saved or loaded
+              fetchUserLocationAndSetDefaultCurrency();
           };
 
-          // Fetch close price yesterday
-          const fetchClosePriceYesterday = () => {
-              const todayChange = document.getElementById("todayChange");
-              const closePriceApiUrl = `https://min-api.cryptocompare.com/data/v2/histoday?fsym=BTC&tsym=${selectedCurrency}&limit=1`;
-
-              fetch(closePriceApiUrl)
-                  .then(response => response.json())
-                  .then(data => {
-                      const closePriceYesterday = data.Data.Data[0].close;
-                      const formatNumber = (number) => {
-                          return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(number);
-                      };
-                      // Calculate percentage change
-                      const percentageChange = ((price - closePriceYesterday) / closePriceYesterday) * 100;
-                      const percentageChangeFormatted = formatNumber(Math.abs(percentageChange), 4);
-
-                      // Check if % > 0 or % < 0
-                      const comparisonText = `${percentageChange >= 0 ? '+' : '-'}${isNaN(percentageChange) ? '0.00' : percentageChangeFormatted}%`;
-
-                      // Write change in dom + title
-                      todayChange.innerHTML = comparisonText + ' Today';
-                      document.title = `${document.title} (${comparisonText})`;
-
-                      // Set color based on percentage change
-                      todayChange.style.color = percentageChange >= 0 ? 'lime' : 'red';
-                  })
-                  .catch(error => console.error("Error fetching BTC yesterday's close price:", error));
+          // Function to fetch user's location based on IP address
+          const fetchUserLocationAndSetDefaultCurrency = () => {
+            if (!selectedCurrency) {
+                fetch('https://get.geojs.io/v1/ip/geo.json')
+                    .then(response => response.json())
+                    .then(data => {
+                        const countryCode = data.country_code;
+                        const defaultCurrency = getDefaultCurrency(countryCode);
+                        selectedCurrency = defaultCurrency;
+                        currencySelect.value = defaultCurrency;
+                        fetchBTCPrice();
+                        fetchClosePriceLast7Days();
+                    })
+                    .catch(error => console.error("Error fetching user location:", error));
+            } else {
+                // If the selected currency is already loaded, proceed with other initializations
+                fetchBTCPrice();
+                fetchClosePriceLast7Days();
+            }
           };
 
-          // Fetch BTC Price now
+          // Function to map country code to default currency
+          const getDefaultCurrency = (countryCode) => {
+              switch (countryCode) {
+                  case 'US':
+                      return 'USD';
+                  case 'GB':
+                      return 'GBP';
+                  case 'JP':
+                      return 'JPY';
+                  case 'AU':
+                      return 'AUD';
+                  case 'CA':
+                      return 'CAD';
+                  case 'CH':
+                      return 'CHF';
+                  case 'RO':
+                      return 'RON';
+                  default:
+                      return 'USD';
+              }
+          };
+
+          // Format price
+          const formatNumber = (number) => {
+              return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(number);
+          };
+
+          // Fetch BTC Price && 24hrs % change
           const fetchBTCPrice = () => {
               selectedCurrency = currencySelect.value;
-              const apiUrl = `https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=${selectedCurrency}`;
+              const apiUrl = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=BTC&tsyms=${selectedCurrency}`;
 
               fetch(apiUrl)
                   .then(response => response.json())
                   .then(data => {
-                      price = data[selectedCurrency];
+                      const price = data.RAW.BTC[selectedCurrency].PRICE;
+                      const changePercentDay = data.RAW.BTC[selectedCurrency].CHANGEPCTDAY;
 
-                      const formatNumber = (number) => {
-                          return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(number);
-                      };
-
-                      // Format price and write it in dom + title
                       const priceFormatted = formatNumber(price);
                       priceElement.innerHTML = `${priceFormatted}`;
                       document.title = `${priceFormatted}`;
-                      twitterLink.href = `https://x.com/intent/post?text=-%20nobody:%0A%0A-%20me:%20Lisan%20al%20Gaib!!%20I’ve%20witnessed%20the%20price%20of%20BTC%20at%20${priceFormatted}%20${selectedCurrency}.%20Don’t%20believe%20me?%20See%3A&url=mybt.cc`;
+                      twitterLink.href = `https://x.com/intent/post?text=-%20nobody:%0A%0A-%20me:%20Lisan%20al%20Gaib!!%20I’ve%20witnessed%20the%20price%20of%20BTC%20at%20${priceFormatted}%20USD.%20Don’t%20believe%20me?%20See%3A&url=mybt.cc`;
 
-                      // Get last update time
+                      const formatChangePercent = (percent) => {
+                          return `${percent >= 0 ? '+' : '-'}${Math.abs(percent).toFixed(2)}%`;
+                      };
+
+                      const comparisonText = formatChangePercent(changePercentDay);
+                      todayChange.innerHTML = comparisonText + ' Today';
+                      todayChange.style.color = changePercentDay >= 0 ? 'lime' : 'red';
+
+                      document.title = `${document.title} (${comparisonText})`;
+
                       const now = new Date();
                       const lastUpdated = `Last Updated: ${now.toLocaleTimeString()}`;
                       lastUpdatedElement.innerHTML = lastUpdated;
                   })
                   .catch(error => console.error("Error fetching BTC price:", error));
+          };
 
-                  setTimeout(fetchClosePriceYesterday, 999); // “lazypromise” to prevent +0.00 result when response is delayed
+          // Fetch last 7 days price
+          const fetchClosePriceLast7Days = () => {
+              selectedCurrency = currencySelect.value;
+              const apiUrl = `https://min-api.cryptocompare.com/data/v2/histoday?fsym=BTC&tsym=${selectedCurrency}&limit=7`;
+
+              fetch(apiUrl)
+                  .then(response => response.json())
+                  .then(data => {
+                      const closePrices = data.Data.Data.map(day => formatNumber(day.close));
+                      createLinePlot(closePrices);
+                  })
+                  .catch(error => console.error("Error fetching last 7 days close prices:", error));
+          };
+
+          // Create BG graph of last 7 days
+          const createLinePlot = (closePrices) => {
+              const days = Array.from({ length: closePrices.length }, (_, i) => i + 1);
+
+              // If dark VS light mode
+              let graphColor;
+              if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                  graphColor = '#333333';
+              } else {
+                  graphColor = '#ddd';
+              }
+
+              const plotData = [{
+                  x: days,
+                  y: closePrices,
+                  type: 'scatter',
+                  mode: 'lines+markers+text',
+                  text: closePrices.map(price => `${price}`),
+                  textposition: 'top',
+                  line: {
+                      color: graphColor,
+                      width: 1
+                  },
+                  // Set default color for all markers
+                  marker: {
+                      color: Array(closePrices.length).fill(graphColor),
+                      size: 6,
+                      symbol: 'circle',
+                      opacity: 1,
+                      line: {
+                          color: graphColor,
+                          width: 1
+                      }
+                  },
+                  hoverinfo: 'none'
+              }];
+
+              // Change the color of the last marker
+              const lastMarkerIndex = closePrices.length - 1;
+              plotData[0].marker.color[lastMarkerIndex] = 'lime';
+
+              const layout = {
+                  xaxis: {
+                      showgrid: false,
+                      zeroline: false,
+                      showticklabels: false
+                  },
+                  yaxis: {
+                      showgrid: false,
+                      zeroline: false,
+                      showticklabels: false
+                  },
+                  staticPlot: true,
+                  showlegend: false,
+                  scrollZoom: false,
+                  dragmode: false,
+                  paper_bgcolor: 'rgba(0,0,0,0)',
+                  plot_bgcolor: 'rgba(0,0,0,0)',
+                  font: {
+                    family: 'monospace',
+                    size: 14,
+                    color: graphColor
+                  }
+              };
+
+              Plotly.newPlot('closePriceGraph', plotData, layout, { displayModeBar: false });
+
+              // Resize SVG upon window resize
+              window.addEventListener('resize', () => {
+                  Plotly.Plots.resize('closePriceGraph');
+              });
           };
 
           // Add event listener for currency selection change
@@ -263,18 +386,18 @@
               selectedCurrency = currencySelect.value;
               saveSelectedCurrency();
               fetchBTCPrice();
+              fetchClosePriceLast7Days();
           });
 
-          // Load selected currency / initial BTC fetch / ping every 15s
+          // Load selected currency / ping every 10s
           const initialize = () => {
               loadSelectedCurrency();
-              fetchBTCPrice();
               setInterval(fetchBTCPrice, 10000);
           };
 
           initialize();
 
-          // add share text to clipboard
+          // Share text to clipboard
           twitterLink.addEventListener("click", function (event) {
               const twitterHref = twitterLink.getAttribute("href");
               const replacedHref = twitterHref.replace("&url=", " https://").replace("https://x.com/intent/post?text=", "");
@@ -352,7 +475,7 @@
                       const whyLink = document.getElementById("whyLink");
                       whyLink.click();
                   }
-                  event.preventDefault(); // Prevents the default behavior of the Escape key
+                  event.preventDefault();
               }
           });
       });
