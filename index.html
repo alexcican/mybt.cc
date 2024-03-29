@@ -168,6 +168,7 @@
           <option value="USD" selected>USD&nbsp;</option>
           <option value="EUR">EUR</option>
           <option value="GBP">GBP</option>
+          <option value="CNY">CNY</option>
           <option value="JPY">JPY</option>
           <option value="AUD">AUD</option>
           <option value="CAD">CAD</option>
@@ -241,6 +242,8 @@
                       return 'USD';
                   case 'GB':
                       return 'GBP';
+                  case 'CN':
+                      return 'CNY';
                   case 'JP':
                       return 'JPY';
                   case 'AU':
@@ -251,6 +254,33 @@
                       return 'CHF';
                   case 'RO':
                       return 'RON';
+                  case 'AT':
+                  case 'BE':
+                  case 'BG':
+                  case 'CY':
+                  case 'CZ':
+                  case 'DE':
+                  case 'DK':
+                  case 'EE':
+                  case 'ES':
+                  case 'FI':
+                  case 'FR':
+                  case 'GR':
+                  case 'HR':
+                  case 'HU':
+                  case 'IE':
+                  case 'IT':
+                  case 'LT':
+                  case 'LU':
+                  case 'LV':
+                  case 'MT':
+                  case 'NL':
+                  case 'PL':
+                  case 'PT':
+                  case 'SE':
+                  case 'SI':
+                  case 'SK':
+                      return 'EUR';
                   default:
                       return 'USD';
               }
@@ -297,15 +327,20 @@
           // Fetch last 7 days price
           const fetchClosePriceLast7Days = () => {
               selectedCurrency = currencySelect.value;
-              const apiUrl = `https://min-api.cryptocompare.com/data/v2/histoday?fsym=BTC&tsym=${selectedCurrency}&limit=7`;
+              // CNY doesn’t story last 7 days = exclude + purge plot if exists
+              if (selectedCurrency !== 'CNY') {
+                  const apiUrl = `https://min-api.cryptocompare.com/data/v2/histoday?fsym=BTC&tsym=${selectedCurrency}&limit=7`;
 
-              fetch(apiUrl)
-                  .then(response => response.json())
-                  .then(data => {
-                      const closePrices = data.Data.Data.map(day => formatNumber(day.close));
-                      createLinePlot(closePrices);
-                  })
-                  .catch(error => console.error("Error fetching last 7 days close prices:", error));
+                  fetch(apiUrl)
+                      .then(response => response.json())
+                      .then(data => {
+                          const closePrices = data.Data.Data.map(day => formatNumber(day.close));
+                          createLinePlot(closePrices);
+                      })
+                      .catch(error => console.error("Error fetching last 7 days close prices:", error));
+              } else {
+                  Plotly.purge('closePriceGraph');
+              }
           };
 
           // Create BG graph of last 7 days
